@@ -12,7 +12,9 @@ object Builders {
 
   private val emptyRecording = Recording(Seq.empty[RecordedCall])
 
-  def builder[T](implicit builder: Builder[T]) = state[Recording, BuildTarget[T]]((recording: Recording) => (recording, new BuildTarget[T](builder)))
+  def builder[T](implicit builder: Builder[T]) = state[Recording, BuildTarget[T]] { (recording: Recording) =>
+    (recording, new BuildTarget[T](builder))
+  }
 
   def buildFrom[T](state: State[Recording, BuildTarget[T]]): T = {
     val (recording, target) = state(emptyRecording)
