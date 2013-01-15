@@ -38,15 +38,20 @@ sealed class BuildTarget[T](val builder:Builder[T]) extends Dynamic {
     }
   }
 
+  private[this] def reify(transcripts: Map[BuildTarget[_], Seq[RecordedCall]], value: Any):Any = value match {
+    case target: BuildTarget[_] => target.buildFrom(transcripts)
+    case targets: Iterable[_] => targets.map(reify(transcripts, _))
+    case _ => value
+  }
+
   def applyDynamic(name:String)(args:Any*) = record(name, args:_*)
 
   def buildFrom(transcripts: Map[BuildTarget[_], Seq[RecordedCall]]):T = {
+
+
     val myTranscript = transcripts(this)
     val properties = myTranscript.map(_.property).toMap
-    val reifiedProperties = properties.mapValues {
-      case target: BuildTarget[_] => target.buildFrom(transcripts)
-      case value: Any => value
-    }
+    val reifiedProperties = properties.mapValues(reify(transcripts, _))
     builder.buildFrom(reifiedProperties)
   }
 }
