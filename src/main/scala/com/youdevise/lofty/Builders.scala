@@ -47,8 +47,6 @@ sealed class BuildTarget[T](val builder:Builder[T]) extends Dynamic {
   def applyDynamic(name:String)(args:Any*) = record(name, args:_*)
 
   def buildFrom(transcripts: Map[BuildTarget[_], Seq[RecordedCall]]):T = {
-
-
     val myTranscript = transcripts(this)
     val properties = myTranscript.map(_.property).toMap
     val reifiedProperties = properties.mapValues(reify(transcripts, _))
