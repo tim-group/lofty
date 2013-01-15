@@ -5,7 +5,7 @@ A dynamic DSL for building complex objects in Scala 2.10.
 
 Example usage:
 
-'''scala
+```scala
 val withoutAge = for {
         address <- builder[Address]
         _       <- address lines Seq("12 Maudlin Street", "Manchester")
@@ -35,4 +35,4 @@ val withoutAge = for {
       } yield person
 
       buildFrom(movedToDulwich) must beEqualTo(Person("Stephen Patrick", None, Address(Seq("42 Penguin Ave", "Dulwich"), "E17 4TW")))
-'''
+```
