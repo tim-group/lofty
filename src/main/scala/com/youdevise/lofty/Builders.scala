@@ -7,14 +7,14 @@ import Scalaz._
 object Builders {
 
   trait Builder[T] {
-    def buildFrom(properties: Map[String, _]):T
+    def buildFrom(properties: Map[String, _]): T
   }
 
   private val emptyRecording = Recording(Seq.empty[RecordedCall])
 
-  def builder[T](implicit builder:Builder[T]) = state[Recording, BuildTarget[T]]((recording:Recording) => (recording, new BuildTarget[T](builder)))
+  def builder[T](implicit builder: Builder[T]) = state[Recording, BuildTarget[T]]((recording: Recording) => (recording, new BuildTarget[T](builder)))
 
-  def buildFrom[T](state: State[Recording, BuildTarget[T]]):T = {
+  def buildFrom[T](state: State[Recording, BuildTarget[T]]): T = {
     val (recording, target) = state(emptyRecording)
     val transcripts = recording.calls.groupBy(_.target)
     target.buildFrom(transcripts)
@@ -23,14 +23,14 @@ object Builders {
 
 import Builders._
 
-sealed case class RecordedCall(target:BuildTarget[_], methodName:String, parameters:Seq[Any]) {
+sealed case class RecordedCall(target: BuildTarget[_], methodName: String, parameters: Seq[Any]) {
   lazy val property = methodName -> parameters.head
 }
 
-sealed case class Recording(val calls:Seq[RecordedCall])
+sealed case class Recording(val calls: Seq[RecordedCall])
 
-sealed class BuildTarget[T](val builder:Builder[T]) extends Dynamic {
-  private def record(name:String, args:Any*) = {
+sealed class BuildTarget[T](val builder: Builder[T]) extends Dynamic {
+  private def record(name: String, args: Any*) = {
     val target = this
     state[Recording, BuildTarget[T]] { (recording:Recording) => (
       new Recording(recording.calls :+ RecordedCall(target, name, args.toSeq)),
@@ -38,15 +38,15 @@ sealed class BuildTarget[T](val builder:Builder[T]) extends Dynamic {
     }
   }
 
-  private[this] def reify(transcripts: Map[BuildTarget[_], Seq[RecordedCall]], value: Any):Any = value match {
+  private[this] def reify(transcripts: Map[BuildTarget[_], Seq[RecordedCall]], value: Any): Any = value match {
     case target: BuildTarget[_] => target.buildFrom(transcripts)
     case targets: Iterable[_] => targets.map(reify(transcripts, _))
     case _ => value
   }
 
-  def applyDynamic(name:String)(args:Any*) = record(name, args:_*)
+  def applyDynamic(name: String)(args: Any*) = record(name, args:_*)
 
-  def buildFrom(transcripts: Map[BuildTarget[_], Seq[RecordedCall]]):T = {
+  def buildFrom(transcripts: Map[BuildTarget[_], Seq[RecordedCall]]): T = {
     val myTranscript = transcripts(this)
     val properties = myTranscript.map(_.property).toMap
     val reifiedProperties = properties.mapValues(reify(transcripts, _))
