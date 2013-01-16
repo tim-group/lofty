@@ -192,5 +192,32 @@ class BuildersSpec extends Specification {
         address,
       Set(hobby)))
     }
+
+    """Read properties as by-reference values""" in {
+      val personBuilder = for {
+        me     <- builder[Person]
+        _      <- me name "My name"
+        _      <- me address (Address(Seq("12 Maudlin Street", "Manchester"), "VB6 5UX"))
+
+        you       <- builder[Person]
+        _         <- you name "Your name"
+        _         <- you address me.address
+      } yield (me, you)
+
+      val (me, you) = buildFrom(personBuilder)
+
+      me.address must beEqualTo(Address(Seq("12 Maudlin Street", "Manchester"), "VB6 5UX"))
+      you.address must beEqualTo(me.address)
+
+      val afterMoving = for {
+        (me, you) <- personBuilder
+        _         <- me address Address(Seq("42 Penguin Ave", "Dulwich"), "E17 4TW")
+      } yield (me, you)
+
+      val (movedMe, movedYou) = buildFrom(afterMoving)
+
+      movedMe.address must beEqualTo(Address(Seq("42 Penguin Ave", "Dulwich"), "E17 4TW"))
+      movedYou.address must beEqualTo(movedMe.address)
+    }
   }
 }
