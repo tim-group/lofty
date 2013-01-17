@@ -3,7 +3,7 @@ lofty
 
 [![Build Status](https://travis-ci.org/youdevise/lofty.png)](https://travis-ci.org/youdevise/lofty)
 
-A dynamic DSL for building complex objects in Scala 2.10.
+A dynamic DSL for building complex objects in Scala 2.10. For a discussion of the aims and methods of the library, see the post [Making it easy with Lofty](https://devblog.timgroup.com/2013/01/16/making-it-easy-with-lofty/) on the [TIM Group blog](https://devblog.timgroup.com).
 
 Example usage:
 
